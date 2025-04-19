@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } fro
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { JwtAuthGuard } from 'src/auth/strategies/jwt-auth.guard';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Controller('tasks')
 export class TasksController {
@@ -17,5 +18,11 @@ export class TasksController {
   @UseGuards(JwtAuthGuard)
   async create(@Req() req, @Body() createTaskDto: CreateTaskDto) {
     return this.tasksService.create(createTaskDto, req.user.userId);
+  }
+
+  @Post('update')
+  @UseGuards(JwtAuthGuard)
+  async update(@Req() Req, @Body() updateTaskDto: UpdateTaskDto) {
+    return this.tasksService.update(updateTaskDto, Req.user.userId);
   }
 }

@@ -21,7 +21,10 @@ export class TasksService {
   }
 
   async findOne(id: number): Promise<Task> {
-    const task = await this.tasksRepository.findOneBy({ id });
+    const task = await this.tasksRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
     if (!task) {
       throw new Error(`Task with id ${id} not found`);
     }
@@ -42,9 +45,16 @@ export class TasksService {
   }
 
 
-  async update(id: number, updateTaskDto: UpdateTaskDto): Promise<Task> {
-    await this.tasksRepository.update(id, updateTaskDto);
-    return this.findOne(id);
+  async update(updateTaskDto: UpdateTaskDto, userId: number): Promise<Task | null> {
+    const task = await this.findOne(updateTaskDto.id);
+    if (!task) {
+      throw new Error(`Task with id ${updateTaskDto.id} not found`);
+    }
+    if (task.user.id !== userId) {
+      throw new Error(`You do not have permission to update this task`);
+    }
+    await this.tasksRepository.update(updateTaskDto.id, updateTaskDto);
+    return this.tasksRepository.findOne({ where: { id: updateTaskDto.id } });
   }
 
   async remove(id: number): Promise<void> {
