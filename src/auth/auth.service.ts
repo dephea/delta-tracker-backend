@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -13,18 +13,12 @@ export class AuthService {
     console.log("Entered validateUser method in AuthService");
     const user = await this.usersService.findByLogin(username);
     if(!user) {
-      return {
-        status: 'error',
-        message: 'User not found',
-      };
+      throw new NotFoundException('User not found');
     }
     console.log('Password:', password, 'Hash:', user?.password);
     const passwordMatch = await bcrypt.compare(password, user.password);
     if(!passwordMatch) {
-      return {
-        status: 'error',
-        message: 'Invalid password',
-      };
+      throw new UnauthorizedException('Invalid password');
     }
 
     // Generate JWT token
