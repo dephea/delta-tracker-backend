@@ -32,10 +32,10 @@ export class UsersService {
     return {
       "status": "success",
       "message": "User created successfully",
+      "access_token": token,
       "data": {
         username: savedUser.username, 
-        createdAt: savedUser.createdAt,
-        access_token: token}
+        createdAt: savedUser.createdAt}
     }
   }
 
