@@ -8,14 +8,16 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { LocalAuthGuard } from './strategies/local.guard';
 import { JwtAuthGuard } from './strategies/jwt-auth.guard';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, LocalStrategy, LocalAuthGuard],
   imports: [forwardRef(() => UsersModule),
-    PassportModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: `${process.env.JWT_SECRET}`,
+      secret: process.env.JWT_SECRET || 'default',
       signOptions: { expiresIn: '1h' }}),
     ],
   exports: [AuthService, JwtModule],
