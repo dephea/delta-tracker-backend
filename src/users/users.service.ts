@@ -24,19 +24,25 @@ export class UsersService {
       password: hashedPassword, 
     });
 
-    const savedUser = await this.usersRepository.save(user);
+    try {
+      const savedUser = await this.usersRepository.save(user);
 
-    const payload = { username: user.username, sub: user.id };
-    const token = await this.jwtService.signAsync(payload);
+      const payload = { username: user.username, sub: user.id };
+      const token = await this.jwtService.signAsync(payload);
 
-    return {
-      "status": "success",
-      "message": "User created successfully",
-      "access_token": token,
-      "data": {
-        username: savedUser.username, 
-        createdAt: savedUser.createdAt}
+      return {
+        "status": "success",
+        "message": "User created successfully",
+        "access_token": token,
+        "data": {
+          username: savedUser.username, 
+          createdAt: savedUser.createdAt}
+      }
+    } catch (error) {
+      throw new Error(`Error creating user: ${error.message}`);
     }
+
+    
   }
 
   async updatePassword(userId: number, dto: UpdateUserDto){

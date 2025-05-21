@@ -14,6 +14,12 @@ export class TasksController {
     return this.tasksService.findAll(req.user.userId); 
   } 
 
+  @Get('find/:id')
+  @UseGuards(JwtAuthGuard)
+  async findOne(@Param('id') id: string, @Req() req) {
+    return this.tasksService.findOne(+id, req.user.userId);
+  }
+
   @Post('create')
   @UseGuards(JwtAuthGuard)
   async create(@Req() req, @Body() createTaskDto: CreateTaskDto) {

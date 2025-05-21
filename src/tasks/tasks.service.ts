@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,13 +20,16 @@ export class TasksService {
     });
   }
 
-  async findOne(id: number): Promise<Task> {
+  async findOne(id: number, userId: number): Promise<Task> {
     const task = await this.tasksRepository.findOne({
-      where: { id },
+      where: { 
+        id,
+        user: { id: userId },
+       },
       relations: ['user'],
     });
     if (!task) {
-      throw new Error(`Task with id ${id} not found`);
+      throw new NotFoundException(`Task with id ${id} not found`);
     }
     return task;
   }
@@ -46,13 +49,14 @@ export class TasksService {
 
 
   async update(updateTaskDto: UpdateTaskDto, userId: number): Promise<Task | null> {
-    const task = await this.findOne(updateTaskDto.id);
+    const task = await this.findOne(updateTaskDto.id, userId);
     if (!task) {
       throw new Error(`Task with id ${updateTaskDto.id} not found`);
     }
     if (task.user.id !== userId) {
-      throw new Error(`You do not have permission to update this task`);
+      throw new ForbiddenException(`You do not have permission to update this task`);
     }
+
     await this.tasksRepository.update(updateTaskDto.id, updateTaskDto);
     return this.tasksRepository.findOne({ where: { id: updateTaskDto.id } });
   }
