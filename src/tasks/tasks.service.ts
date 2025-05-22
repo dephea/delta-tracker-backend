@@ -58,7 +58,9 @@ export class TasksService {
     }
 
     await this.tasksRepository.update(updateTaskDto.id, updateTaskDto);
-    return this.tasksRepository.findOne({ where: { id: updateTaskDto.id } });
+    const res = await this.tasksRepository.findOne({ where: { id: updateTaskDto.id } })
+    console.log(res);
+    return res;;
   }
 
   async remove(id: number): Promise<void> {
