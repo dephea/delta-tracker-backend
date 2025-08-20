@@ -25,7 +25,7 @@ export class PostsService {
             throw new NotFoundException(`post with id ${id} was not found`)
         }
         console.log(post.user);
-        return plainToInstance(postDto, post); // TODO: fix here, since it doesn't hide sensitive info
+        return plainToInstance(postDto, post, { excludeExtraneousValues: true });
     }
 
     async findAll(userId: number): Promise<postDto[]> {
