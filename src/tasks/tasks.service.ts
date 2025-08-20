@@ -29,7 +29,7 @@ export class TasksService {
       relations: ['user'],
     });
     if (!task) {
-      throw new NotFoundException(`Task with id ${id} not found`);
+      throw new NotFoundException(`Task with id ${id} was not found`);
     }
     return task;
   }
@@ -38,7 +38,7 @@ export class TasksService {
   async create(createTaskDto: CreateTaskDto, userId: number): Promise<Task> {
     console.log("Create Task DTO from create func:", createTaskDto);
     const now = new Date();
-    const task = await this.tasksRepository.create({
+    const task = this.tasksRepository.create({
       ...createTaskDto,
       user: { id: userId },
       createdAt: now,

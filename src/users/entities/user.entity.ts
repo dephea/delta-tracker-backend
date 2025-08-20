@@ -1,3 +1,5 @@
+import { Exclude } from 'class-transformer';
+import { Post } from 'src/posts/entities/post.entity';
 import { Task } from 'src/tasks/entities/task.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 
@@ -10,6 +12,7 @@ export class User {
   username: string;
 
   @Column()
+  @Exclude()
   password: string;
 
   @CreateDateColumn()
@@ -20,4 +23,7 @@ export class User {
 
   @OneToMany(() => Task, task => task.user)
   tasks: Task[];
+
+  @OneToMany(() => Post, post => post)
+  posts: Post[];
 }

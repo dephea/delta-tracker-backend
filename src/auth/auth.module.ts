@@ -9,6 +9,8 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { LocalAuthGuard } from './strategies/local.guard';
 import { JwtAuthGuard } from './strategies/jwt-auth.guard';
 import * as dotenv from 'dotenv';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from 'src/users/entities/user.entity';
 dotenv.config();
 
 @Module({
@@ -19,6 +21,7 @@ dotenv.config();
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'default',
       signOptions: { expiresIn: '1h' }}),
+    TypeOrmModule.forFeature([User]) 
     ],
   exports: [AuthService, JwtModule],
 })
