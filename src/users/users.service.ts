@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,11 +15,14 @@ export class UsersService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
-    const {username, password} = createUserDto;
-    console.log(createUserDto);
-    console.log(username, password)
+  async create(dto: CreateUserDto) {
+    const {username, password} = dto;
     const hashedPassword = await bcrypt.hash(password, 9); 
+
+    const alreadyExists = await this.usersRepository.findOne({ where : { username }});
+    if(alreadyExists) {
+      throw new ConflictException(`username ${username} already exists`);
+    }
 
     const user = this.usersRepository.create({
       username,
@@ -27,6 +30,7 @@ export class UsersService {
     });
 
     try {
+      
       const savedUser = await this.usersRepository.save(user);
 
       const payload = { username: user.username, sub: user.id };
@@ -34,7 +38,6 @@ export class UsersService {
 
       return {
         "status": "success",
-        "message": "User created successfully",
         "access_token": token,
         "data": {
           username: savedUser.username, 
@@ -43,19 +46,42 @@ export class UsersService {
     } catch (error) {
       throw new Error(`Error creating user: ${error.message}`);
     }
+  }
 
-    
+  async login(dto: CreateUserDto) {
+    const {username, password} = dto;
+    const hashedPassword = await bcrypt.hash(password, 9); 
+
+    const user = await this.usersRepository.findOne({
+      where: {username}
+    });
+    if(!user) {
+      throw new NotFoundException(`User ${username} was not found`);
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if(!isValid) {
+      throw new BadRequestException(`Invalid credentials`);
+    }
+
+    const payload = { username: user.username, sub: user.id };
+    const token = await this.jwtService.signAsync(payload);
+
+    return {
+        "status": "success",
+        "access_token": token,
+      }
   }
 
   async updatePassword(userId: number, dto: UpdateUserDto){
     const user = await this.usersRepository.findOneBy({ id: userId });
     if (!user) {
-      throw new Error(`User with id ${userId} not found`);
+      throw new NotFoundException(`User with id ${userId} not found`);
     }
 
     const passwordMatch = await bcrypt.compare(dto.currentPassword, user.password);
     if (!passwordMatch) {
-      throw new Error('Current password is incorrect');
+      throw new BadRequestException('Current password is incorrect');
     }
 
     const hashedNewPassword = await bcrypt.hash(dto.newPassword, 9);
